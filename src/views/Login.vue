@@ -4,7 +4,9 @@ import { ref } from 'vue'
 import{userRegisterService, userLoginService} from '@/api/user.js'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
+import{useTokenStore} from '@/stores/token.js'
 const router = useRouter()
+const tokenStore = useTokenStore()
 //控制注册与登录表单的显示， 默认显示注册
 const isRegister = ref(false)
 //定义数据模型
@@ -50,10 +52,13 @@ const register=async () => {
 }
 const login=async () => {
     const res = await userLoginService(registerData.value)
-    res.code === 0
-    ? (ElMessage.success('登录成功'))
-    : ElMessage.error(res.message)
-    router.push('/layout')
+    if (res.code === 0) {
+        ElMessage.success('登录成功')
+        tokenStore.setToken(res.data?.token || res.data)
+        router.push('/layout')
+    } else {
+        ElMessage.error(res.message)
+    }
 }
 const clearRegisterData = () => {
     registerData.value.username = ''
