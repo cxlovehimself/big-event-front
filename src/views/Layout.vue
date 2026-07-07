@@ -10,6 +10,50 @@ import {
     CaretBottom
 } from '@element-plus/icons-vue'
 import avatar from '@/assets/default.png'
+import { userInfoService } from '@/api/user.js'
+import useUserInfoStore from '@/stores/userInfo.js'
+import { useRouter } from 'vue-router'
+import { ElMessage,ElMessageBox } from 'element-plus'
+import {useTokenStore} from '@/stores/token.js'
+const router = useRouter()
+const userInfoStore = useUserInfoStore()
+const tokenStore = useTokenStore()
+//调用函数
+const getUserInfo = async () => {
+    const res = await userInfoService()
+    userInfoStore.setInfo(res.data)
+    console.log(res)
+}   
+getUserInfo();
+const handleCommand = (command) => {
+    switch (command) {
+        case 'info':
+            router.push('/user/info')
+            break
+        case 'avatar':
+            router.push('/user/avatar')
+            break
+        case 'resetPassword':
+            router.push('/user/resetPassword')
+            break
+        case 'logout':
+           ElMessageBox.confirm('确定退出登录吗？', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning',
+            }).then(() => {
+
+                tokenStore.removeToken()
+                userInfoStore.removeInfo()
+                ElMessage.success('退出登录成功')
+                router.push('/')
+
+            }).catch(() => {
+                ElMessage.info('已取消退出登录')
+            })
+        break
+    }
+}
 </script>
 
 <template>
@@ -50,7 +94,7 @@ import avatar from '@/assets/default.png'
                         </el-icon>
                         <span>更换头像</span>
                     </el-menu-item>
-                    <el-menu-item index="/user/reset-password">
+                    <el-menu-item index="/user/resetPassword">
                         <el-icon>
                             <EditPen />
                         </el-icon>
@@ -63,19 +107,19 @@ import avatar from '@/assets/default.png'
         <el-container>
             <!-- 头部区域 -->
             <el-header>
-                <div>黑马程序员：<strong>东哥</strong></div>
-                <el-dropdown placement="bottom-end">
+                <div>黑马程序员：<strong>{{ userInfoStore.info.nickname }}</strong></div>
+                <el-dropdown placement="bottom-end" @command="handleCommand">
                     <span class="el-dropdown__box">
-                        <el-avatar :src="avatar" />
+                        <el-avatar :src="userInfoStore.info.userPic?userInfoStore.info.userPic:avatar" />
                         <el-icon>
                             <CaretBottom />
                         </el-icon>
                     </span>
                     <template #dropdown>
                         <el-dropdown-menu>
-                            <el-dropdown-item command="profile" :icon="User">基本资料</el-dropdown-item>
+                            <el-dropdown-item command="info" :icon="User">基本资料</el-dropdown-item>
                             <el-dropdown-item command="avatar" :icon="Crop">更换头像</el-dropdown-item>
-                            <el-dropdown-item command="password" :icon="EditPen">重置密码</el-dropdown-item>
+                            <el-dropdown-item command="resetPassword" :icon="EditPen">重置密码</el-dropdown-item>
                             <el-dropdown-item command="logout" :icon="SwitchButton">退出登录</el-dropdown-item>
                         </el-dropdown-menu>
                     </template>

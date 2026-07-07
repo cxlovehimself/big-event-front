@@ -33,7 +33,7 @@ const routes = [
                 component: UserInfo
             },
             {
-                path: '/user/reset-password',
+                path: '/user/resetPassword',
                 component: UserResetPassword
             }
         ]
